@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Varşova – İstanbul Bilet Takibi</title>
+<style>
+  :root {
+    --navy: #0d1b3a; --navy2: #15284f; --ink: #10204a;
+    --xp1: #0a5fe0; --xp2: #3d95ff; --xp3: #0040b0;
+    --beige: #ece9d8; --beige-line: #b9b4a0;
+    --out: #1a66d9; --ret: #e0700b; --tot: #17914a; --best: #ffd23f;
+    --good: #17914a; --bad: #d03030;
+    --panel: linear-gradient(180deg, #ffffff 0%, #eef6ff 100%); --soft: #4a5a80; --pline: rgba(16,32,74,.14);
+  }
+  * { box-sizing: border-box; }
+  html { background: #a9cdee; }
+  body { margin: 0; color: var(--ink); font: 16px/1.45 "Trebuchet MS", Tahoma, Verdana, sans-serif; padding-bottom: 60px; }
+  .sky { position: fixed; inset: 0; z-index: -2; background: #a9cdee url(assets/sky.jpg) center / cover no-repeat; }
+  .bubble { position: fixed; z-index: -1; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.95) 0 6%, rgba(255,255,255,.15) 18%, rgba(190,225,255,.10) 60%, rgba(255,255,255,.55) 72%, rgba(255,255,255,0) 74%);
+    animation: rise linear infinite; }
+  @keyframes rise { from { transform: translateY(0) } to { transform: translateY(-115vh) } }
+  @media (prefers-reduced-motion: reduce) { .bubble, .sticker { animation: none !important; } }
+
+  main { max-width: 1000px; margin: 0 auto; padding: 22px 16px 24px; position: relative; }
+
+  /* XP pencere */
+  .win { background: var(--beige); border: 3px solid var(--xp3); border-top: 0; border-radius: 9px 9px 4px 4px;
+         box-shadow: 0 10px 30px rgba(10,40,100,.35); margin-bottom: 22px; overflow: hidden; }
+  .titlebar { display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 12px; color: #fff; font-weight: 700;
+    background: linear-gradient(180deg, #3d95ff 0%, #0a5fe0 12%, #0857d6 50%, #0a5fe0 88%, #0040b0 100%);
+    text-shadow: 1px 1px 0 #0b2f80; font-size: 1.02rem; border-radius: 7px 7px 0 0; }
+  .titlebar .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tb-btn { width: 24px; height: 22px; border: 1.5px solid #fff; border-radius: 4px; display: grid; place-items: center;
+    background: linear-gradient(180deg, #5aa6ff, #2a74e8); font: 700 13px/1 Tahoma, sans-serif; flex: none; }
+  .tb-btn.x { background: linear-gradient(180deg, #f08a6c, #d1401c); }
+  .winbody { padding: 16px; }
+  .winbody.dark { background: var(--panel); color: var(--ink); }
+
+  /* başlık penceresi + maskot */
+  .hero { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+  .mascot { width: 118px; flex: none; transform: rotate(-6deg); filter: drop-shadow(0 4px 6px rgba(0,0,0,.25)); }
+  .speech { position: relative; flex: 1; min-width: 230px; background: #ffffe1; border: 2px solid #000; border-radius: 12px;
+    padding: 12px 14px; font-size: 1.05rem; margin-bottom: 18px; }
+  .speech::before { content: ""; position: absolute; left: -16px; bottom: 14px; border: 8px solid transparent; border-right: 8px solid #000; }
+  .speech::after { content: ""; position: absolute; left: -11px; bottom: 15px; border: 7px solid transparent; border-right: 7px solid #ffffe1; }
+  .speech b { font-size: 1.25rem; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--beige-line); font-size: 1rem; font-weight: 700; }
+  select { font: inherit; font-weight: 400; padding: 5px 8px; border: 2px solid #7f9db9; background: #fff; color: var(--ink); border-radius: 2px; }
+  input[type=checkbox] { width: 18px; height: 18px; vertical-align: -3px; accent-color: var(--xp1); }
+
+  /* biletler */
+  .tickets { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px; margin-bottom: 22px; }
+  .ticket { position: relative; display: flex; background: var(--panel); color: var(--ink); border-radius: 14px; overflow: hidden;
+    box-shadow: 0 10px 26px rgba(10,30,80,.35), inset 0 1px 0 rgba(255,255,255,.6); border: 2px solid #fff; }
+  .ticket::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 46%; pointer-events: none;
+    background: linear-gradient(180deg, rgba(255,255,255,.45), rgba(255,255,255,0)); }
+  .stub { width: 16px; flex: none; background: var(--xp1); }
+  .ticket.total .stub { background: var(--tot); } .ticket.out .stub { background: var(--out); } .ticket.ret .stub { background: var(--ret); }
+  .tbody { position: relative; z-index: 1; padding: 14px 16px 16px 18px; flex: 1; border-left: 3px dashed var(--pline); min-width: 0; }
+  .tlabel { font-size: 1.12rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+  .ticket.total .tlabel { color: var(--tot); } .ticket.out .tlabel { color: var(--out); } .ticket.ret .tlabel { color: var(--ret); }
+  .tprice { font-size: 3.3rem; font-weight: 800; line-height: 1.05; margin: 6px 0 8px; letter-spacing: -.01em; }
+  .tline { font-size: 1.06rem; line-height: 1.5; }
+  .tline.muted { color: var(--soft); }
+  .pill { display: inline-block; margin-top: 6px; padding: 3px 10px; border-radius: 999px; font-weight: 700; font-size: 1rem; color: var(--navy); }
+  .pill.down { background: var(--good); color: #fff; } .pill.up { background: var(--bad); color: #fff; } .pill.flat { background: #fff; }
+
+  .tprice { display: flex; align-items: center; gap: 12px; }
+  .meow { position: fixed; z-index: 9; left: -200px; top: 0; width: 84px; height: 84px; margin: -42px 0 0 -42px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer;
+    filter: drop-shadow(0 3px 4px rgba(60,20,70,.35)); transition: transform .15s; }
+  .meow img { width: 100%; height: 100%; display: block; }
+  .meow:hover { transform: scale(1.1) rotate(-6deg); }
+  @media (max-width: 720px) { .meow { width: 62px; height: 62px; margin: -31px 0 0 -31px; } }
+  .meow.playing { animation: groove .5s ease-in-out infinite alternate; }
+  @keyframes groove { from { transform: rotate(-10deg) scale(1.05) } to { transform: rotate(10deg) scale(1.12) } }
+
+  /* grafik */
+  .hint { margin: 0 0 12px; font-size: 1.02rem; color: var(--ink); }
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 10px; font-size: 1.05rem; font-weight: 700; }
+  .legend i { display: inline-block; width: 22px; height: 6px; border-radius: 3px; margin-right: 8px; vertical-align: middle; }
+  .chart-wrap { position: relative; height: 330px; }
+  .hscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  #bydateWrap { min-width: 100%; }
+  #dateTabs button { border-radius: 6px; border-bottom: 2px solid #919b9c; }
+  #dateTabs button.on { background: var(--xp1); border-color: #fff; color: #fff; }
+  .statusbar { margin-top: 14px; background: #fff; color: var(--ink); border: 2px solid #7f9db9; border-radius: 4px; padding: 12px 14px; font-size: 1.12rem; min-height: 54px; }
+  .statusbar b { font-size: 1.3rem; }
+  .statusbar .k { color: #4a5a80; }
+
+  /* tablo */
+  .tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: -2px; position: relative; }
+  .tabs button { font: inherit; font-weight: 700; padding: 8px 14px; cursor: pointer; color: var(--ink);
+    border: 2px solid #919b9c; border-bottom: 0; border-radius: 6px 6px 0 0; background: linear-gradient(#fff, #e3e3db); }
+  .tabs button.on { background: var(--panel); color: var(--ink); border-color: #a9c8ec; border-top: 3px solid var(--ret); }
+  .tablebox { background: var(--panel); color: var(--ink); border: 2px solid #a9c8ec; border-radius: 0 6px 6px 6px; padding: 6px 10px 10px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 1.05rem; }
+  th, td { text-align: left; padding: 11px 8px; border-bottom: 1px solid var(--pline); white-space: nowrap; }
+  th { color: var(--soft); font-size: .85rem; text-transform: uppercase; letter-spacing: .05em; }
+  td.price { font-size: 1.45rem; font-weight: 800; color: var(--ink); }
+  tr:first-child + tr td.price { color: var(--ink); background: var(--best); border-radius: 4px; }
+  .go { display: inline-block; padding: 6px 14px; border-radius: 4px; color: #fff; text-decoration: none; font-weight: 700;
+    background: linear-gradient(180deg, #7cd35a, #3c9a26); border: 1px solid #2c7a1a; text-shadow: 0 1px 0 #2c7a1a; }
+  .go:hover { filter: brightness(1.08); }
+
+  /* çıkartmalar */
+  .sticker { position: absolute; z-index: 3; pointer-events: none; filter: drop-shadow(0 8px 10px rgba(0,30,90,.3)); animation: bob 4s ease-in-out infinite; }
+  @keyframes bob { 0%,100% { translate: 0 0 } 50% { translate: 0 -8px } }
+  .s1 { width: 190px; right: -40px; top: -6px; rotate: 8deg; }
+  /* yan çıkartmalar yalnızca kenarda boşluk varken: içeriğin üstüne binmesinler */
+  .s2 { width: 130px; left: -160px; top: 40%; rotate: -10deg; animation-delay: -1.5s; display: none; }
+  .s3 { width: 104px; right: -2px; top: -46px; rotate: -6deg; animation-delay: -2.4s; transform: scaleX(-1); }
+  @media (min-width: 1380px) { .s2 { display: block; } .s3 { width: 150px; right: -185px; top: 20px; } }
+
+  .empty { padding: 30px 16px; text-align: center; font-size: 1.15rem; }
+  footer { background: rgba(255,255,255,.85); border-radius: 8px; padding: 10px 14px; font-size: .92rem; color: var(--ink); }
+
+  /* görev çubuğu */
+  .taskbar { position: fixed; left: 0; right: 0; bottom: 0; height: 44px; display: flex; align-items: center; gap: 10px; z-index: 10;
+    background: linear-gradient(180deg, #3f8cf3 0%, #245edb 10%, #245edb 85%, #1941a5 100%); border-top: 1px solid #0c3fa8; }
+  .start { height: 100%; display: flex; align-items: center; gap: 8px; padding: 0 22px 0 8px; color: #fff; font: italic 800 1.25rem "Trebuchet MS", sans-serif;
+    text-shadow: 1px 1px 2px #134d13; border: 0; cursor: pointer; border-radius: 0 14px 14px 0;
+    background: linear-gradient(180deg, #5dbb4a 0%, #3c9a26 45%, #318c1d 100%); box-shadow: inset -2px 0 4px rgba(0,0,0,.25); }
+  .start img { width: 30px; height: 30px; border-radius: 6px; }
+  .task { color: #fff; background: rgba(255,255,255,.18); border: 1px solid rgba(0,0,0,.25); border-radius: 3px; padding: 5px 12px; font-size: .95rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .tray { margin-left: auto; height: 100%; display: flex; align-items: center; padding: 0 14px; color: #fff; font-size: .92rem; white-space: nowrap;
+    background: linear-gradient(180deg, #1290e8, #0f6fd1); border-left: 1px solid #0b4fb0; }
+
+  @media (max-width: 720px) {
+    .s1 { width: 120px; right: -8px; top: -18px; }
+    .tprice { font-size: 2.9rem; }
+    .chart-wrap { height: 280px; }
+    .mascot { width: 92px; }
+    .task { display: none; }
+    .hero { flex-wrap: nowrap; gap: 14px; }
+    .speech { min-width: 0; font-size: 1rem; margin-bottom: 8px; }
+    .speech b { font-size: 1.15rem; }
+  }
+</style>
+</head>
+<body>
+<div class="sky"></div>
+
+<main>
+  <img class="sticker s1" src="assets/cat-plane.png" alt="">
+  <img class="sticker s2" src="assets/cat-bus.png" alt="">
+
+  <section class="win">
+    <div class="titlebar"><span class="t">Varşova ↔ İstanbul Bilet Takibi</span><span class="tb-btn">_</span><span class="tb-btn">□</span><span class="tb-btn x">×</span></div>
+    <div class="winbody">
+      <div class="hero">
+        <img class="mascot" src="assets/cat-bus.png" alt="Otobüs süren kedi">
+        <div class="speech" id="speech">Fiyatlar yükleniyor…</div>
+      </div>
+      <div class="controls" id="controls" hidden>
+        <label>Havayolu: <select id="airline"><option value="">Hepsi</option></select></label>
+        <label><input type="checkbox" id="direct"> Sadece aktarmasız</label>
+      </div>
+    </div>
+  </section>
+
+  <div id="app" hidden>
+    <div class="tickets" id="tickets"></div>
+
+    <section class="win">
+      <div class="titlebar"><span class="t">Fiyat geçmişi</span><span class="tb-btn">_</span><span class="tb-btn">□</span><span class="tb-btn x">×</span></div>
+      <div class="winbody dark">
+        <p class="hint">Her sabahki kontrolde bulunan en ucuz gidiş-dönüş ve onun gidiş ve dönüş fiyatları. Bir güne tıkla, detayı aşağıda gör.</p>
+        <div class="legend"><span><i style="background:var(--tot)"></i>Gidiş-dönüş</span><span><i style="background:var(--out)"></i>Gidiş</span><span><i style="background:var(--ret)"></i>Dönüş</span></div>
+        <div class="chart-wrap"><canvas id="history"></canvas></div>
+        <div class="statusbar" id="histInfo"></div>
+      </div>
+    </section>
+
+    <section class="win">
+      <div class="titlebar"><span class="t">Hangi uçuş günü daha ucuz?</span><span class="tb-btn">_</span><span class="tb-btn">□</span><span class="tb-btn x">×</span></div>
+      <div class="winbody dark">
+        <p class="hint">Takip edilen tarih aralığındaki her uçuş günü için, bu sabahki kontrolde bulunan en ucuz fiyat. Sarı çubuklar o yönün en ucuz günleri (aynı en düşük fiyata sahip tüm günler). Çubuğa tıkla, uçuşu gör.</p>
+        <div class="tabs" id="dateTabs" style="margin-bottom:14px">
+          <button data-d="out" class="on">Gidiş günleri</button>
+          <button data-d="ret">Dönüş günleri</button>
+        </div>
+        <div class="legend"><span><i id="dirSwatch" style="background:var(--out)"></i>Diğer günler</span><span><i style="background:var(--best); outline: 2px solid var(--ink)"></i>En ucuz gün(ler)</span></div>
+        <div class="hscroll"><div class="chart-wrap" id="bydateWrap"><canvas id="bydate"></canvas></div></div>
+        <div class="statusbar" id="dateInfo"></div>
+      </div>
+    </section>
+
+    <section class="win" style="position:relative; overflow:visible">
+      <img class="sticker s3" src="assets/cat-plane.png" alt="">
+      <div class="titlebar"><span class="t">Bugünün en ucuz uçuşları</span><span class="tb-btn">_</span><span class="tb-btn">□</span><span class="tb-btn x">×</span></div>
+      <div class="winbody">
+        <div class="tabs">
+          <button data-dir="out" class="on">Gidiş: Varşova → İstanbul</button>
+          <button data-dir="ret">Dönüş: İstanbul → Varşova</button>
+        </div>
+        <div class="tablebox"><table id="table"></table></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="win" id="empty" hidden>
+    <div class="titlebar"><span class="t">Henüz veri yok</span><span class="tb-btn x">×</span></div>
+    <div class="winbody empty">İlk günlük kontrol çalışınca fiyatlar burada görünecek.</div>
+  </section>
+
+  <footer>Fiyatlar Google Flights'tan her sabah otomatik alınır, tek kişi ve kabin bagajı hariç olabilir. Satın almadan önce "Bak" düğmesiyle güncel fiyatı kontrol edin.</footer>
+</main>
+
+<button class="meow" id="meow" type="button" title="Tıkla, şarkı çalsın" aria-label="Müziği çal / durdur"><img src="assets/cat-music.png" alt=""></button>
+
+<div class="taskbar">
+  <button class="start" id="start"><img src="assets/cat-bus.png" alt="">uçalım</button>
+  <span class="task">Varşova ↔ İstanbul Bilet Takibi</span>
+  <span class="tray" id="tray">–</span>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// arka plan baloncukları
+(function () {
+  const sizes = [70, 46, 110, 38, 88, 60, 130, 52];
+  sizes.forEach((s, i) => {
+    const b = document.createElement("div");
+    b.className = "bubble";
+    Object.assign(b.style, { width: s + "px", height: s + "px", left: (i * 13 + 4) % 96 + "vw", top: 100 + (i % 3) * 15 + "vh",
+      animationDuration: 22 + (i % 4) * 7 + "s", animationDelay: -i * 4 + "s" });
+    document.body.appendChild(b);
+  });
+})();
+
+// kulaklıklı kedi: şarkının 0:15 – 1:20 arası (assets/song-clip.mp3 olarak kesildi). Tıkla çal, tekrar tıkla durdur.
+const song = new Audio("assets/song-clip.mp3");
+song.preload = "none";
+const setPlaying = (on) => document.querySelectorAll(".meow").forEach((b) => b.classList.toggle("playing", on));
+function toggleSong() { song.paused ? song.play().catch(() => {}) : song.pause(); }
+song.addEventListener("play", () => setPlaying(true));
+song.addEventListener("pause", () => setPlaying(false));
+song.addEventListener("ended", () => { song.currentTime = 0; setPlaying(false); });
+document.addEventListener("click", (e) => { if (e.target.closest(".meow")) toggleSong(); });
+
+// ikon arka plandaki ağacın biraz üstünde durur. Arka plan "cover" ile ölçeklendiği için
+// konumu fotoğraf koordinatlarından ekrana çeviriyoruz (fotoğraf 736x1243, hedef nokta 655,590).
+function placeMeow() {
+  const IW = 736, IH = 1243, TX = 655, TY = 590, vw = innerWidth, vh = innerHeight;
+  const k = Math.max(vw / IW, vh / IH), x = (vw - IW * k) / 2 + TX * k, y = (vh - IH * k) / 2 + TY * k;
+  const m = document.getElementById("meow");
+  const room = vw - document.querySelector("main").getBoundingClientRect().right;  // içeriğin sağındaki boşluk
+  if (room >= 110) {  // geniş ekran: ağacın üstünde, içeriğin dışında
+    m.style.left = Math.min(Math.max(x, vw - room + 60), vw - 50) + "px";
+    m.style.top = Math.max(80, Math.min(y, vh - 110)) + "px";
+  } else {            // dar ekran: sağ altta, görev çubuğunun hemen üstünde
+    m.style.left = vw - 62 + "px";
+    m.style.top = vh - 44 - 52 + "px";
+  }
+}
+addEventListener("resize", placeMeow); placeMeow();
+
+const SYM = { EUR: "€", USD: "$", PLN: "zł", TRY: "₺" };
+const fmtDate = (iso) => new Date(iso + "T00:00:00").toLocaleDateString("tr-TR", { day: "numeric", month: "short", weekday: "short" });
+// çubuk etiketi: eğik yazı kaymasın diye gün / ay / gün adı alt alta, tam çubuğun altında
+const dayParts = (iso) => { const d = new Date(iso + "T00:00:00");
+  return [String(d.getDate()), d.toLocaleDateString("tr-TR", { month: "short" }), d.toLocaleDateString("tr-TR", { weekday: "short" })]; };
+const fmtLong = (iso) => new Date(iso + "T00:00:00").toLocaleDateString("tr-TR", { day: "numeric", month: "long", weekday: "long" });
+let H, cur = "€", dir = "out", dateDir = "out", charts = {}, view = null, stay = { min: 1, max: 999 };
+const C = { out: "#1a66d9", ret: "#e0700b", tot: "#17914a", best: "#ffd23f", grid: "rgba(16,32,74,.10)", tick: "#10204a" };
+const money = (n) => (n == null ? "–" : Math.round(n) + " " + cur);
+
+// teklif: [yön, uçuşTarihi, kalkış, varış, fiyat, havayolu, aktarma, saat]
+function passes(o) {
+  const a = document.getElementById("airline").value;
+  if (a && !o[5].includes(a)) return false;
+  if (document.getElementById("direct").checked && o[6] > 0) return false;
+  return true;
+}
+const minOf = (offers, d) => {
+  const xs = offers.filter((o) => o[0] === d);
+  return xs.length ? xs.reduce((m, o) => (o[4] < m[4] ? o : m)) : null;
+};
+// en ucuz gidiş-dönüş çifti: dönüş, gidişten sonraki bir günde olmalı
+function bestPair(offers) {
+  const perDay = (d) => {
+    const m = {};
+    offers.forEach((o) => { if (o[0] === d && (!m[o[1]] || o[4] < m[o[1]][4])) m[o[1]] = o; });
+    return Object.values(m);
+  };
+  const outs = perDay("out"), rets = perDay("ret");
+  const days = (a, b) => (new Date(b) - new Date(a)) / 864e5;
+  let best = null;
+  for (const a of outs) for (const b of rets) {
+    const n = days(a[1], b[1]);
+    if (n >= stay.min && n <= stay.max && (!best || a[4] + b[4] < best[0][4] + best[1][4])) best = [a, b];
+  }
+  return best;
+}
+const stopsTxt =(o) => (o[6] ? o[6] + " aktarma" : "aktarmasız");
+const flightTxt = (o) => `${o[5]} · ${o[7]} · ${stopsTxt(o)} · ${o[2]} → ${o[3]}`;
+function gflights(o) {
+  const q = `Flights to ${o[3]} from ${o[2]} on ${o[1]} one way`;
+  return "https://www.google.com/travel/flights?hl=tr&curr=" + encodeURIComponent(H.currency) + "&q=" + encodeURIComponent(q);
+}
+
+function render() {
+  const snaps = H.snapshots.map((s) => ({ d: s.d, o: s.o.filter(passes) }));
+  const today = snaps[snaps.length - 1], prev = snaps[snaps.length - 2];
+  const tot = (s) => { const p = bestPair(s.o); return p ? p[0][4] + p[1][4] : null; };
+  const pair = bestPair(today.o), bo = pair ? pair[0] : null, br = pair ? pair[1] : null, t = tot(today), pt = prev ? tot(prev) : null;
+  const allTot = snaps.map(tot), valid = allTot.filter((x) => x != null), lowest = valid.length ? Math.min(...valid) : null;
+  view = { snaps, today, allTot };
+
+  let delta = "";
+  if (t != null && pt != null) {
+    const diff = Math.round(t - pt);
+    delta = diff === 0 ? `<span class="pill flat">Dünle aynı</span>`
+      : `<span class="pill ${diff < 0 ? "down" : "up"}">Dünden ${Math.abs(diff)} ${cur} ${diff < 0 ? "ucuz" : "pahalı"}</span>`;
+  }
+  const ticket = (cls, label, price, lines) =>
+    `<div class="ticket ${cls}"><div class="stub"></div><div class="tbody"><div class="tlabel">${label}</div><div class="tprice">${money(price)}</div>${lines}</div></div>`;
+  const lines = (o) => o ? `<div class="tline">${fmtLong(o[1])}, ${o[7]}</div><div class="tline">${o[5]} · ${stopsTxt(o)}</div><div class="tline muted">${o[2]} → ${o[3]}</div>`
+    : `<div class="tline">Bu filtreyle sonuç yok</div>`;
+  document.getElementById("tickets").innerHTML =
+    ticket("total", "En ucuz gidiş-dönüş", t,
+      (pair ? `<div class="tline">${fmtDate(bo[1])} → ${fmtDate(br[1])}</div>` +
+              `<div class="tline">${(new Date(br[1]) - new Date(bo[1])) / 864e5} gün kalış · gidiş ${money(bo[4])} + dönüş ${money(br[4])}</div>` : "") +
+      (lowest != null ? `<div class="tline muted">Takip başladığından beri en düşük: ${money(lowest)}</div>` : "") + delta) +
+    ticket("out", "Bu biletin gidişi", bo && bo[4], lines(bo)) +
+    ticket("ret", "Bu biletin dönüşü", br && br[4], lines(br));
+
+  setPlaying(!song.paused);
+  document.getElementById("speech").innerHTML = t != null
+    ? `Bugün en ucuz gidiş-dönüş <b>${money(t)}</b>. ${pt != null && t < pt ? "Dünden daha ucuz, bakmaya değer!" : "Fiyatları her sabah senin için kontrol ediyorum."}`
+    : "Bu filtreyle bugün gidiş-dönüş bulamadım. Filtreyi gevşetmeyi dene.";
+
+  // fiyat geçmişi
+  const ds = (label, data, color, w) => ({ label, data, borderColor: color, backgroundColor: color, borderWidth: w,
+    pointRadius: snaps.length > 60 ? 3 : 6, pointHoverRadius: 9, pointHitRadius: 18, tension: .25, spanGaps: true });
+  draw("history", { type: "line", data: { labels: snaps.map((s) => fmtDate(s.d)), datasets: [
+    ds("Gidiş-dönüş", allTot, C.tot, 5),
+    ds("Gidiş", snaps.map((s) => (bestPair(s.o) || [])[0]?.[4] ?? null), C.out, 4),
+    ds("Dönüş", snaps.map((s) => (bestPair(s.o) || [])[1]?.[4] ?? null), C.ret, 4),
+  ] } }, histClick);
+  histClick(snaps.length - 1);
+
+  renderDates();
+  renderTable(today);
+}
+
+// uçuş gününe göre (seçili yön)
+function renderDates() {
+  const today = view.today, d = dateDir;
+  const days = [...new Set(today.o.filter((o) => o[0] === d).map((o) => o[1]))].sort();
+  const items = days.map((x) => minOf(today.o.filter((o) => o[1] === x), d)).filter(Boolean);
+  const cheapest = minOf(items, d), color = d === "out" ? C.out : C.ret;
+  view.items = items;
+  document.getElementById("dirSwatch").style.background = color;
+  document.getElementById("bydateWrap").style.width = items.length * 32 + "px";  // her çubuğun altında kendi tarihi; sığmazsa yana kaydırılır
+  draw("bydate", { type: "bar", data: { labels: items.map((o) => dayParts(o[1])), datasets: [{
+    label: "En ucuz", data: items.map((o) => o[4]), borderRadius: 5, maxBarThickness: 40,
+    backgroundColor: items.map((o) => (o[4] === cheapest[4] ? C.best : color)),
+    borderColor: items.map((o) => (o[4] === cheapest[4] ? C.tot : color)), borderWidth: 2,
+  }] } }, dateClick, true, { autoSkip: false, maxRotation: 0, minRotation: 0, font: { size: 12, weight: "bold" } });
+  const ci = items.indexOf(cheapest);
+  if (ci >= 0) dateClick(ci); else document.getElementById("dateInfo").textContent = "Bu filtreyle sonuç yok.";
+}
+
+function histClick(i) {
+  const s = view.snaps[i]; if (!s) return;
+  const p = bestPair(s.o), o = p ? p[0] : null, r = p ? p[1] : null;
+  document.getElementById("histInfo").innerHTML =
+    `<span class="k">${fmtLong(s.d)} kontrolü:</span> gidiş-dönüş <b>${money(view.allTot[i])}</b><br>` +
+    `Gidiş <b>${money(o && o[4])}</b> <span class="k">${o ? "(" + fmtDate(o[1]) + ", " + o[5] + ")" : ""}</span> · ` +
+    `Dönüş <b>${money(r && r[4])}</b> <span class="k">${r ? "(" + fmtDate(r[1]) + ", " + r[5] + ")" : ""}</span>`;
+}
+function dateClick(i) {
+  const o = view.items[i]; if (!o) return;
+  document.getElementById("dateInfo").innerHTML =
+    `<span class="k">${o[0] === "out" ? "Gidiş" : "Dönüş"}, ${fmtLong(o[1])}:</span> <b>${money(o[4])}</b><br>${flightTxt(o)} ` +
+    `&nbsp;<a class="go" href="${gflights(o)}" target="_blank" rel="noopener">Bak</a>`;
+}
+
+function renderTable(today) {
+  const rows = today.o.filter((o) => o[0] === dir).sort((a, b) => a[4] - b[4]).slice(0, 12);
+  document.getElementById("table").innerHTML = rows.length
+    ? `<tr><th>Fiyat</th><th>Tarih</th><th>Saat</th><th>Havayolu</th><th>Güzergâh</th><th></th></tr>` +
+      rows.map((o) => `<tr><td class="price">${money(o[4])}</td><td>${fmtDate(o[1])}</td><td>${o[7]}</td>
+        <td>${o[5]}<br><span style="color:var(--soft)">${stopsTxt(o)}</span></td><td>${o[2]} → ${o[3]}</td>
+        <td><a class="go" href="${gflights(o)}" target="_blank" rel="noopener">Bak</a></td></tr>`).join("")
+    : `<tr><td class="empty">Bu filtreyle sonuç yok.</td></tr>`;
+}
+
+function draw(id, cfg, onPick, isBar, xTicks) {
+  if (charts[id]) charts[id].destroy();
+  const font = { family: '"Trebuchet MS", Tahoma, sans-serif', size: 14, weight: "bold" };
+  cfg.options = {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: "index", intersect: false },
+    onClick: (e, els, chart) => { const p = chart.getElementsAtEventForMode(e, "index", { intersect: false }, true); if (p.length) onPick(p[0].index); },
+    plugins: { legend: { display: false },
+      tooltip: { backgroundColor: "#ffffe1", titleColor: "#10204a", bodyColor: "#10204a", borderColor: "#000", borderWidth: 2,
+        padding: 12, titleFont: { ...font, size: 15 }, bodyFont: { ...font, size: 16 }, displayColors: !isBar, boxPadding: 4,
+        callbacks: { label: (c) => c.parsed.y == null ? null : `${isBar ? "" : c.dataset.label + ": "}${Math.round(c.parsed.y)} ${cur}` } } },
+    scales: {
+      x: { grid: { color: C.grid }, ticks: { color: C.tick, font, maxRotation: 60, ...(xTicks || {}) } },
+      y: { grid: { color: C.grid }, beginAtZero: !!isBar, ticks: { color: C.tick, font, callback: (v) => v + " " + cur } },
+    },
+  };
+  charts[id] = new Chart(document.getElementById(id), cfg);
+}
+
+async function init() {
+  try { H = await (await fetch("data/history.json", { cache: "no-store" })).json(); } catch { H = null; }
+  try {
+    const cfg = await (await fetch("config.json", { cache: "no-store" })).json();
+    stay = { min: cfg.min_stay_days ?? 1, max: cfg.max_stay_days ?? 999 };
+  } catch {}
+  if (!H || !H.snapshots.length) {
+    document.getElementById("empty").hidden = false;
+    document.getElementById("speech").textContent = "Henüz fiyat yok. İlk kontrolden sonra burada olacağım.";
+    return;
+  }
+  cur = SYM[H.currency] || H.currency;
+  const last = H.snapshots[H.snapshots.length - 1];
+  document.getElementById("tray").textContent = "Güncellendi: " +
+    new Date(last.d + "T00:00:00").toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
+  const names = new Set();
+  last.o.forEach((o) => o[5].split(" + ").forEach((n) => names.add(n)));
+  const sel = document.getElementById("airline");
+  [...names].sort().forEach((n) => sel.add(new Option(n, n)));
+  document.getElementById("app").hidden = false;
+  document.getElementById("controls").hidden = false;
+  sel.onchange = document.getElementById("direct").onchange = render;
+  document.querySelectorAll("[data-dir]").forEach((b) => (b.onclick = () => {
+    dir = b.dataset.dir;
+    document.querySelectorAll("[data-dir]").forEach((x) => x.classList.toggle("on", x === b));
+    renderTable(view.today);
+  }));
+  document.querySelectorAll("#dateTabs button").forEach((b) => (b.onclick = () => {
+    dateDir = b.dataset.d;
+    document.querySelectorAll("#dateTabs button").forEach((x) => x.classList.toggle("on", x === b));
+    renderDates();
+  }));
+  render();
+}
+document.getElementById("start").onclick = () => document.getElementById("tickets").scrollIntoView({ behavior: "smooth" });
+init();
+</script>
+</body>
+</html>

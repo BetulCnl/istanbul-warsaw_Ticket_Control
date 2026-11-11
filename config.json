@@ -1,0 +1,28 @@
+{
+  "currency": "EUR",
+  "origins": [
+    "WAW"
+  ],
+  "destinations": [
+    "IST",
+    "SAW"
+  ],
+  "airlines": {
+    "Turkish Airlines": "TK",
+    "LOT": "LO",
+    "Pegasus": "PC"
+  },
+  "outbound_dates": {
+    "from": "2026-11-15",
+    "to": "2027-01-10"
+  },
+  "return_dates": {
+    "from": "2026-11-15",
+    "to": "2027-01-10"
+  },
+  "min_stay_days": 7,
+  "max_stay_days": 28,
+  "max_stops": 1,
+  "keep_offers_per_query": 6,
+  "pause_seconds": 3
+}
