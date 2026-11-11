@@ -7,6 +7,20 @@ En ucuz gidiş-dönüşü, fiyat geçmişini ve hangi günün daha ucuz olduğun
 - Site GitHub Pages üzerinden yayınlanır. Ücretsizdir, API anahtarı gerekmez.
 - Fiyatlar tek kişi içindir ve bagaj içermeyebilir. Satın almadan önce sitedeki "Bak" düğmesiyle güncel fiyata bakın.
 
+## Ekran görüntüleri
+
+**En ucuz gidiş-dönüş**
+
+![En ucuz gidiş-dönüş kartları](docs/biletler.jpg)
+
+**Hangi uçuş günü daha ucuz?** Sarı çubuklar en ucuz günler. Çubuğa tıklayınca uçuşun detayı görünür.
+
+![Uçuş günlerine göre fiyat grafiği](docs/ucuz-gunler.jpg)
+
+**Bugünün en ucuz uçuşları**
+
+![En ucuz uçuşlar tablosu](docs/ucuslar.jpg)
+
 ## Ayarlar (`config.json`)
 
 | Alan | Ne işe yarar |
@@ -15,12 +29,6 @@ En ucuz gidiş-dönüşü, fiyat geçmişini ve hangi günün daha ucuz olduğun
 | `origins`, `destinations` | Havalimanları (WAW; IST ve SAW) |
 | `airlines` | Takip edilen havayolları |
 | `min_stay_days`, `max_stay_days` | Gidiş-dönüş için en az ve en çok kalış günü |
-
-## Kurulum
-
-1. **Settings → Pages**: Source olarak *Deploy from a branch*, branch olarak `main` / `(root)` seçin.
-2. **Actions → Günlük fiyat kontrolü → Run workflow** ile ilk fiyatları çekin.
-   Bundan sonra her sabah kendiliğinden çalışır.
 
 ## Bilgisayarda çalıştırma
 
